@@ -1,5 +1,6 @@
-import 'package:beauty/src/app.dart';
+import 'package:beauty/src/core/api_repository.dart';
 import 'package:beauty/src/core/models.dart';
+import 'package:beauty/src/core/session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,6 +24,9 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   @override
   void initState() {
     super.initState();
+    final session = ref.read(sessionProvider);
+    _branchId = session.branchId;
+    _customerId = session.customerId;
     _lookups = _load();
   }
 
@@ -32,12 +36,17 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
     super.dispose();
   }
 
-  Future<List<List<ApiRecord>>> _load() => Future.wait([
-    ref.read(repositoryProvider).list('branches'),
-    ref.read(repositoryProvider).list('services'),
-    ref.read(repositoryProvider).list('staff'),
-    ref.read(repositoryProvider).list('customers'),
-  ]);
+  Future<List<List<ApiRecord>>> _load() {
+    final customerMode = ref.read(sessionProvider).role == BeautyRole.customer;
+    return Future.wait([
+      ref.read(repositoryProvider).list('branches'),
+      ref.read(repositoryProvider).list('services'),
+      ref.read(repositoryProvider).list('staff'),
+      customerMode
+          ? Future.value(const <ApiRecord>[])
+          : ref.read(repositoryProvider).list('customers'),
+    ]);
+  }
 
   Future<void> _pickDateTime() async {
     final now = DateTime.now();
@@ -122,6 +131,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
           );
         }
         final values = snapshot.data!;
+        final customerMode = ref.read(sessionProvider).role == BeautyRole.customer;
         return SafeArea(
           child: ListView(
             padding: const EdgeInsets.all(20),
@@ -134,12 +144,12 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Uygunluk ve cakisma kontrolleri MainApi tarafinda yapilir.',
+                'Uygunluk ve çakışma kontrolleri MainApi tarafından yapılır.',
                 style: TextStyle(color: Theme.of(context).hintColor),
               ),
               const SizedBox(height: 24),
               _Picker(
-                label: 'Sube',
+                label: 'Şube',
                 value: _branchId,
                 records: values[0],
                 onChanged: (value) => setState(() => _branchId = value),
@@ -159,13 +169,15 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                 onChanged: (value) => setState(() => _staffId = value),
               ),
               const SizedBox(height: 14),
-              _Picker(
-                label: 'Musteri',
-                value: _customerId,
-                records: values[3],
-                onChanged: (value) => setState(() => _customerId = value),
-              ),
-              const SizedBox(height: 14),
+              if (!customerMode) ...[
+                _Picker(
+                  label: 'Müşteri',
+                  value: _customerId,
+                  records: values[3],
+                  onChanged: (value) => setState(() => _customerId = value),
+                ),
+                const SizedBox(height: 14),
+              ],
               OutlinedButton.icon(
                 onPressed: _pickDateTime,
                 icon: const Icon(Icons.event_rounded),
@@ -173,7 +185,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   child: Text(
                     _startAt == null
-                        ? 'Tarih ve saat secin'
+                        ? 'Tarih ve saat seçin'
                         : '${MaterialLocalizations.of(context).formatFullDate(_startAt!)} · ${TimeOfDay.fromDateTime(_startAt!).format(context)}',
                   ),
                 ),
@@ -207,7 +219,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.check_rounded),
-                label: const Text('Uygunlugu kontrol et ve kaydet'),
+                label: const Text('Uygunluğu kontrol et ve kaydet'),
               ),
             ],
           ),

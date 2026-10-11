@@ -1,4 +1,4 @@
-import 'package:beauty/src/app.dart';
+import 'package:beauty/src/core/api_repository.dart';
 import 'package:beauty/src/core/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

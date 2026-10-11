@@ -9,11 +9,96 @@ extension BeautyRoleLabel on BeautyRole {
 }
 
 final class AppSession {
-  const AppSession({this.role, this.displayName, this.loading = false});
+  const AppSession({
+    this.role,
+    this.productRole,
+    this.displayName,
+    this.tenantId,
+    this.tenantName,
+    this.branchId,
+    this.branchName,
+    this.customerId,
+    this.staffId,
+    this.loading = false,
+    this.error,
+  });
   final BeautyRole? role;
+  final String? productRole;
   final String? displayName;
+  final String? tenantId;
+  final String? tenantName;
+  final String? branchId;
+  final String? branchName;
+  final String? customerId;
+  final String? staffId;
   final bool loading;
+  final String? error;
   bool get isAuthenticated => role != null;
+  String get roleLabel => switch (productRole) {
+    'owner' => 'İşletme sahibi',
+    'admin' => 'Yönetici',
+    'manager' => 'Şube yöneticisi',
+    'receptionist' => 'Resepsiyon',
+    'specialist' => 'Uzman',
+    'cashier' => 'Kasa sorumlusu',
+    'customer' => 'Müşteri',
+    'auditor' => 'Denetçi',
+    _ => role?.label ?? '',
+  };
+}
+
+final class BeautySessionProfile {
+  const BeautySessionProfile({
+    required this.uid,
+    required this.tenantId,
+    required this.tenantName,
+    required this.productRole,
+    required this.assigned,
+    required this.displayName,
+    this.branchId,
+    this.branchName,
+    this.customerId,
+    this.staffId,
+  });
+
+  factory BeautySessionProfile.fromJson(Map<String, Object?> json) =>
+      BeautySessionProfile(
+        uid: json['uid'] is String ? json['uid']! as String : '',
+        tenantId: json['tenantId'] is String ? json['tenantId']! as String : '',
+        tenantName: json['tenantName'] is String
+            ? json['tenantName']! as String
+            : 'OdivonPro Beauty',
+        productRole: json['role'] is String ? json['role']! as String : '',
+        assigned: json['assigned'] == true,
+        displayName: json['displayName'] is String
+            ? json['displayName']! as String
+            : '',
+        branchId: json['branchId'] is String ? json['branchId']! as String : null,
+        branchName: json['branchName'] is String
+            ? json['branchName']! as String
+            : null,
+        customerId: json['customerId'] is String
+            ? json['customerId']! as String
+            : null,
+        staffId: json['staffId'] is String ? json['staffId']! as String : null,
+      );
+
+  final String uid;
+  final String tenantId;
+  final String tenantName;
+  final String productRole;
+  final bool assigned;
+  final String displayName;
+  final String? branchId;
+  final String? branchName;
+  final String? customerId;
+  final String? staffId;
+
+  BeautyRole get shellRole => switch (productRole) {
+    'customer' => BeautyRole.customer,
+    'specialist' || 'receptionist' || 'cashier' => BeautyRole.specialist,
+    _ => BeautyRole.manager,
+  };
 }
 
 final class ApiRecord {
@@ -76,11 +161,15 @@ final class DashboardSummary {
     required this.customers,
     required this.revenue,
     required this.criticalStock,
+    required this.sessions,
+    required this.packages,
   });
   final int appointments;
   final int customers;
   final double revenue;
   final int criticalStock;
+  final int sessions;
+  final int packages;
 }
 
 final class ApiEnvelope<T> {

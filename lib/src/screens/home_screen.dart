@@ -1,4 +1,4 @@
-import 'package:beauty/src/app.dart';
+import 'package:beauty/src/core/api_repository.dart';
 import 'package:beauty/src/core/models.dart';
 import 'package:beauty/src/core/session.dart';
 import 'package:beauty/src/widgets/brand_logo.dart';
@@ -151,9 +151,11 @@ class _OverviewPage extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: _PageHeader(
                   title: session.displayName ?? 'Odivon Beauty',
-                  subtitle: role == BeautyRole.customer
-                      ? 'Kisisel bakim merkeziniz'
-                      : 'Canli operasyon merkezi',
+                  subtitle: [
+                    session.tenantName,
+                    session.branchName,
+                    session.roleLabel,
+                  ].whereType<String>().where((value) => value.isNotEmpty).join(' · '),
                 ),
               ),
               SliverPadding(
@@ -193,23 +195,31 @@ class _OverviewPage extends ConsumerWidget {
                             color: const Color(0xFF6366F1),
                           ),
                           _MetricCard(
-                            label: role == BeautyRole.customer
-                                ? 'Musteri kaydi'
-                                : 'Musteriler',
-                            value: '${snapshot.data?.customers ?? 0}',
-                            icon: Icons.groups_rounded,
+                            label: role == BeautyRole.customer ? 'Aktif paket' : 'Müşteriler',
+                            value: role == BeautyRole.customer
+                                ? '${snapshot.data?.packages ?? 0}'
+                                : '${snapshot.data?.customers ?? 0}',
+                            icon: role == BeautyRole.customer
+                                ? Icons.card_membership_rounded
+                                : Icons.groups_rounded,
                             color: const Color(0xFF0EA5E9),
                           ),
                           _MetricCard(
-                            label: 'Ciro',
-                            value: _currency(snapshot.data?.revenue ?? 0),
-                            icon: Icons.trending_up_rounded,
+                            label: role == BeautyRole.customer ? 'Tamamlanan seans' : 'Ciro',
+                            value: role == BeautyRole.customer
+                                ? '${snapshot.data?.sessions ?? 0}'
+                                : _currency(snapshot.data?.revenue ?? 0),
+                            icon: role == BeautyRole.customer
+                                ? Icons.spa_rounded
+                                : Icons.trending_up_rounded,
                             color: const Color(0xFF10B981),
                           ),
                           _MetricCard(
-                            label: 'Kritik stok',
-                            value: '${snapshot.data?.criticalStock ?? 0}',
-                            icon: Icons.inventory_2_rounded,
+                            label: role == BeautyRole.customer ? 'Profil' : 'Kritik stok',
+                            value: role == BeautyRole.customer ? 'Aktif' : '${snapshot.data?.criticalStock ?? 0}',
+                            icon: role == BeautyRole.customer
+                                ? Icons.verified_user_rounded
+                                : Icons.inventory_2_rounded,
                             color: const Color(0xFFF59E0B),
                           ),
                         ],
@@ -774,11 +784,21 @@ class _ProfilePage extends ConsumerWidget {
                                     ?.copyWith(fontWeight: FontWeight.w800),
                               ),
                               Text(
-                                session.role?.label ?? '',
+                                session.roleLabel,
                                 style: TextStyle(
                                   color: Theme.of(context).hintColor,
                                 ),
                               ),
+                              if (session.tenantName != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${session.tenantName}${session.branchName == null ? '' : ' · ${session.branchName}'}',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

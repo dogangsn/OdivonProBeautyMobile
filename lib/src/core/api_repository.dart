@@ -4,8 +4,14 @@ import 'package:beauty/src/core/bootstrap.dart';
 import 'package:beauty/src/core/models.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final repositoryProvider = Provider<BeautyRepository>(
+  (ref) => MainApiBeautyRepository(),
+);
 
 abstract interface class BeautyRepository {
+  Future<BeautySessionProfile> session();
   Future<List<ApiRecord>> list(String resource, {Map<String, String>? query});
   Future<List<AppointmentSummary>> appointments({DateTime? from, DateTime? to});
   Future<DashboardSummary> dashboard();
@@ -23,6 +29,19 @@ final class MainApiBeautyRepository implements BeautyRepository {
     defaultValue: 'https://mainapi.odivon.com/api/v1/beauty',
   );
   final http.Client _client;
+
+  @override
+  Future<BeautySessionProfile> session() async {
+    final response = await _client.get(
+      Uri.parse('$_baseUrl/me'),
+      headers: await _headers(),
+    );
+    final data = _decode(response);
+    if (data is! Map<String, Object?>) {
+      throw const FormatException('Geçersiz oturum yanıtı.');
+    }
+    return BeautySessionProfile.fromJson(data);
+  }
 
   Future<Map<String, String>> _headers() async {
     if (!AppBootstrap.firebaseEnabled) {
@@ -85,6 +104,8 @@ final class MainApiBeautyRepository implements BeautyRepository {
       customers: _integer(data['customers']),
       revenue: _double(data['revenue']),
       criticalStock: _integer(data['criticalStock']),
+      sessions: _integer(data['sessions']),
+      packages: _integer(data['packages']),
     );
   }
 

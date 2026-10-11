@@ -1,4 +1,3 @@
-import 'package:beauty/src/core/api_repository.dart';
 import 'package:beauty/src/core/models.dart';
 import 'package:beauty/src/core/session.dart';
 import 'package:beauty/src/screens/booking_screen.dart';
@@ -9,21 +8,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-final repositoryProvider = Provider<BeautyRepository>(
-  (ref) => MainApiBeautyRepository(),
-);
-
 final routerProvider = Provider<GoRouter>((ref) {
   final session = ref.watch(sessionProvider);
   return GoRouter(
-    initialLocation: session.isAuthenticated ? '/home' : '/sign-in',
+    initialLocation: session.loading
+        ? '/splash'
+        : session.isAuthenticated
+        ? '/home'
+        : '/sign-in',
     redirect: (context, state) {
       final signingIn = state.matchedLocation == '/sign-in';
+      final splash = state.matchedLocation == '/splash';
+      if (session.loading && !splash) return '/splash';
+      if (!session.loading && splash) {
+        return session.isAuthenticated ? '/home' : '/sign-in';
+      }
       if (!session.isAuthenticated && !signingIn) return '/sign-in';
       if (session.isAuthenticated && signingIn) return '/home';
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const _SessionSplash(),
+      ),
       GoRoute(
         path: '/sign-in',
         builder: (context, state) => const SignInScreen(),
@@ -165,4 +173,13 @@ class BeautyApp extends ConsumerWidget {
       hintColor: muted,
     );
   }
+}
+
+class _SessionSplash extends StatelessWidget {
+  const _SessionSplash();
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(
+    body: Center(child: CircularProgressIndicator()),
+  );
 }
