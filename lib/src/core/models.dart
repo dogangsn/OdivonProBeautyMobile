@@ -15,6 +15,7 @@ final class AppSession {
     this.displayName,
     this.tenantId,
     this.tenantName,
+    this.centerCode,
     this.branchId,
     this.branchName,
     this.customerId,
@@ -27,6 +28,7 @@ final class AppSession {
   final String? displayName;
   final String? tenantId;
   final String? tenantName;
+  final String? centerCode;
   final String? branchId;
   final String? branchName;
   final String? customerId;
@@ -59,6 +61,7 @@ final class BeautySessionProfile {
     this.branchName,
     this.customerId,
     this.staffId,
+    this.centerCode,
   });
 
   factory BeautySessionProfile.fromJson(Map<String, Object?> json) =>
@@ -81,6 +84,9 @@ final class BeautySessionProfile {
             ? json['customerId']! as String
             : null,
         staffId: json['staffId'] is String ? json['staffId']! as String : null,
+        centerCode: json['centerCode'] is String
+            ? json['centerCode']! as String
+            : null,
       );
 
   final String uid;
@@ -93,6 +99,7 @@ final class BeautySessionProfile {
   final String? branchName;
   final String? customerId;
   final String? staffId;
+  final String? centerCode;
 
   BeautyRole get shellRole => switch (productRole) {
     'customer' => BeautyRole.customer,

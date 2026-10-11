@@ -236,12 +236,14 @@ class _OverviewPage extends ConsumerWidget {
   }
 }
 
-class _HeroPanel extends StatelessWidget {
+class _HeroPanel extends ConsumerWidget {
   const _HeroPanel({required this.role});
   final BeautyRole role;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(sessionProvider);
+    return Container(
     padding: const EdgeInsets.all(22),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(28),
@@ -265,6 +267,31 @@ class _HeroPanel extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
+        if (role != BeautyRole.customer && session.centerCode != null) ...[
+          const SizedBox(height: 14),
+          Semantics(
+            label: 'Müşteri mobil erişim kodu ${session.centerCode}',
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: .13),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha: .18)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.key_rounded, color: Colors.white, size: 17),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Müşteri mobil kodu: ${session.centerCode}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         Text(
           role == BeautyRole.customer
@@ -289,7 +316,8 @@ class _HeroPanel extends StatelessWidget {
         ),
       ],
     ),
-  );
+    );
+  }
 }
 
 class _AppointmentsPage extends ConsumerStatefulWidget {

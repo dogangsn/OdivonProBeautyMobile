@@ -1,4 +1,5 @@
 import 'package:beauty/src/core/bootstrap.dart';
+import 'package:beauty/src/core/api_repository.dart';
 import 'package:beauty/src/core/session.dart';
 import 'package:beauty/src/widgets/brand_logo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +17,7 @@ class SignInScreen extends ConsumerStatefulWidget {
 
 class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _phone = TextEditingController(text: '+90');
+  final _centerCode = TextEditingController();
   final _code = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
@@ -28,6 +30,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   void dispose() {
     _phone.dispose();
+    _centerCode.dispose();
     _code.dispose();
     _email.dispose();
     _password.dispose();
@@ -68,6 +71,10 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
 
   Future<void> _sendCode() async {
     if (!_ready()) return;
+    if (_centerCode.text.trim().length < 5) {
+      _showError('Güzellik merkezinizin mobil erişim kodunu girin.');
+      return;
+    }
     if (!_phone.text.trim().startsWith('+') || _phone.text.trim().length < 10) {
       _showError('Telefonu ülke koduyla birlikte girin. Örnek: +905xxxxxxxxx');
       return;
@@ -82,6 +89,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
         try {
           final result = await FirebaseAuth.instance.signInWithCredential(credential);
           if (result.user != null) {
+            await ref.read(repositoryProvider).connectCustomer(_centerCode.text);
             await ref.read(sessionProvider.notifier).acceptFirebaseUser(result.user!);
           }
         } on Object catch (error) {
@@ -121,6 +129,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
       );
       final result = await FirebaseAuth.instance.signInWithCredential(credential);
       if (result.user == null) throw StateError('Kullanıcı oturumu oluşturulamadı.');
+      await ref.read(repositoryProvider).connectCustomer(_centerCode.text);
       await ref.read(sessionProvider.notifier).acceptFirebaseUser(result.user!);
     });
   }
@@ -204,6 +213,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         verificationId: _verificationId,
                         error: error,
                         phone: _phone,
+                        centerCode: _centerCode,
                         code: _code,
                         email: _email,
                         password: _password,
@@ -241,6 +251,7 @@ class _SignInCard extends StatelessWidget {
     required this.verificationId,
     required this.error,
     required this.phone,
+    required this.centerCode,
     required this.code,
     required this.email,
     required this.password,
@@ -258,6 +269,7 @@ class _SignInCard extends StatelessWidget {
   final String? verificationId;
   final String? error;
   final TextEditingController phone;
+  final TextEditingController centerCode;
   final TextEditingController code;
   final TextEditingController email;
   final TextEditingController password;
@@ -319,18 +331,31 @@ class _SignInCard extends StatelessWidget {
             const SizedBox(height: 20),
             if (mode == _SignInMode.customer) ...[
               if (verificationId == null)
-                TextField(
-                  controller: phone,
-                  keyboardType: TextInputType.phone,
-                  autofillHints: const [AutofillHints.telephoneNumber],
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: busy ? null : (_) => onCustomerSubmit(),
-                  decoration: const InputDecoration(
-                    labelText: 'Telefon numarası',
-                    hintText: '+905xxxxxxxxx',
-                    prefixIcon: Icon(Icons.phone_rounded),
+                ...[
+                  TextField(
+                    controller: centerCode,
+                    textCapitalization: TextCapitalization.characters,
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(
+                      labelText: 'Merkez kodu',
+                      hintText: 'BY-XXXXXX',
+                      prefixIcon: Icon(Icons.storefront_rounded),
+                    ),
                   ),
-                )
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: phone,
+                    keyboardType: TextInputType.phone,
+                    autofillHints: const [AutofillHints.telephoneNumber],
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: busy ? null : (_) => onCustomerSubmit(),
+                    decoration: const InputDecoration(
+                      labelText: 'Telefon numarası',
+                      hintText: '+905xxxxxxxxx',
+                      prefixIcon: Icon(Icons.phone_rounded),
+                    ),
+                  ),
+                ]
               else
                 TextField(
                   controller: code,

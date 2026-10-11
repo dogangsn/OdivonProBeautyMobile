@@ -55,6 +55,7 @@ final class SessionController extends Notifier<AppSession> {
             : user.displayName ?? user.phoneNumber ?? user.email,
         tenantId: profile.tenantId,
         tenantName: profile.tenantName,
+        centerCode: profile.centerCode,
         branchId: profile.branchId,
         branchName: profile.branchName,
         customerId: profile.customerId,

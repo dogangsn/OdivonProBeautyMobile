@@ -12,6 +12,7 @@ final repositoryProvider = Provider<BeautyRepository>(
 
 abstract interface class BeautyRepository {
   Future<BeautySessionProfile> session();
+  Future<void> connectCustomer(String centerCode);
   Future<List<ApiRecord>> list(String resource, {Map<String, String>? query});
   Future<List<AppointmentSummary>> appointments({DateTime? from, DateTime? to});
   Future<DashboardSummary> dashboard();
@@ -41,6 +42,17 @@ final class MainApiBeautyRepository implements BeautyRepository {
       throw const FormatException('Geçersiz oturum yanıtı.');
     }
     return BeautySessionProfile.fromJson(data);
+  }
+
+  @override
+  Future<void> connectCustomer(String centerCode) async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/mobile/connect'),
+      headers: await _headers(),
+      body: jsonEncode({'centerCode': centerCode.trim().toUpperCase()}),
+    );
+    _decode(response);
+    await FirebaseAuth.instance.currentUser?.getIdToken(true);
   }
 
   Future<Map<String, String>> _headers() async {
