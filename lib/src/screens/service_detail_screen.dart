@@ -1,196 +1,182 @@
+import 'package:beauty/src/app.dart';
+import 'package:beauty/src/core/models.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ServiceDetailScreen extends StatelessWidget {
-  const ServiceDetailScreen({super.key});
+class ServiceDetailScreen extends ConsumerStatefulWidget {
+  const ServiceDetailScreen({
+    required this.appointmentId,
+    this.appointment,
+    super.key,
+  });
+  final String appointmentId;
+  final AppointmentSummary? appointment;
+  @override
+  ConsumerState<ServiceDetailScreen> createState() =>
+      _ServiceDetailScreenState();
+}
+
+class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
+  final _zone = TextEditingController();
+  final _energy = TextEditingController();
+  final _duration = TextEditingController();
+  final _reaction = TextEditingController();
+  final _notes = TextEditingController();
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _zone.dispose();
+    _energy.dispose();
+    _duration.dispose();
+    _reaction.dispose();
+    _notes.dispose();
+    super.dispose();
+  }
+
+  Future<void> _complete() async {
+    final appointment = widget.appointment;
+    if (_zone.text.trim().isEmpty || appointment == null) {
+      setState(() => _error = 'Randevu ve uygulama bolgesi zorunludur.');
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await ref.read(repositoryProvider).complete(widget.appointmentId, {
+        'bodyZone': _zone.text.trim(),
+        if (_energy.text.isNotEmpty)
+          'energyJcm2': double.tryParse(_energy.text),
+        'durationMin': int.tryParse(_duration.text) ?? 30,
+        'reaction': _reaction.text.trim(),
+        'notes': _notes.text.trim(),
+        'products': <Object?>[],
+      });
+      if (mounted) Navigator.of(context).pop();
+    } catch (error) {
+      setState(() => _error = '$error');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+    final appointment = widget.appointment;
     return Scaffold(
+      appBar: AppBar(title: const Text('Seans uygulamasi')),
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              expandedHeight: 260,
-              flexibleSpace: FlexibleSpaceBar(
-                background: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        const Color(0xFFE9D7AF),
-                        const Color(0xFFB5884D),
-                      ],
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      appointment?.serviceName ?? 'Randevu',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        right: -30,
-                        top: 28,
-                        child: Container(
-                          width: 180,
-                          height: 180,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 24,
-                        bottom: 24,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Golden Glow Facial',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '60 dakika • 1 uzman • 4.9/5',
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    const SizedBox(height: 6),
+                    Text(
+                      appointment?.customerName ?? widget.appointmentId,
+                      style: TextStyle(color: Theme.of(context).hintColor),
+                    ),
+                  ],
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.all(20),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _InfoRow(
-                    label: 'Fiyat',
-                    value: '₺1.250',
-                    icon: Icons.attach_money_rounded,
-                  ),
-                  const SizedBox(height: 14),
-                  _InfoRow(
-                    label: 'Öne çıkan içerik',
-                    value: 'Cilt yenileme • Peeling • Maske',
-                    icon: Icons.auto_awesome_rounded,
-                  ),
-                  const SizedBox(height: 22),
-                  Text(
-                    'Bakım detayları',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Kızarıklık azaltıcı bakım, mikrodermal temizleme ve cilt aydınlatıcı serum uygulaması ile cildinizi canlandırır. Çalışma sonrası yumuşaklık ve ışıltı hissi sağlar.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.hintColor,
-                      height: 1.6,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'İçerik',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: const [
-                      _Pill(label: 'Peeling'),
-                      _Pill(label: 'Hydration'),
-                      _Pill(label: 'Vitamin C'),
-                      _Pill(label: 'LED Therapy'),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.calendar_month_rounded),
-                      label: const Text('Randevu al'),
-                    ),
-                  ),
-                ]),
+            const SizedBox(height: 20),
+            Text(
+              'Uygulama parametreleri',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _zone,
+              decoration: const InputDecoration(
+                labelText: 'Vucut / uygulama bolgesi *',
+                prefixIcon: Icon(Icons.accessibility_new_rounded),
               ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _energy,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Enerji J/cm2',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _duration,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Sure (dk)'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _reaction,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Reaksiyon ve tolerans',
+                alignLabelWithHint: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notes,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Uzman seans notu',
+                alignLabelWithHint: true,
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.add_a_photo_outlined),
+              label: const Text('Oncesi / sonrasi fotograf ekle'),
+            ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 14),
+                child: Text(
+                  _error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: _saving ? null : _complete,
+              icon: _saving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.task_alt_rounded),
+              label: const Text('Seansi tamamla'),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: theme.colorScheme.primary),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor)),
-                  const SizedBox(height: 4),
-                  Text(value, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Pill extends StatelessWidget {
-  const _Pill({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(label),
     );
   }
 }

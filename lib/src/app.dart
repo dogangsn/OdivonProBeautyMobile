@@ -1,4 +1,5 @@
 import 'package:beauty/src/core/api_repository.dart';
+import 'package:beauty/src/core/models.dart';
 import 'package:beauty/src/core/session.dart';
 import 'package:beauty/src/screens/booking_screen.dart';
 import 'package:beauty/src/screens/home_screen.dart';
@@ -32,8 +33,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => HomeScreen(role: session.role!),
       ),
       GoRoute(
-        path: '/service-detail',
-        builder: (context, state) => const ServiceDetailScreen(),
+        path: '/service-detail/:appointmentId',
+        builder: (context, state) => ServiceDetailScreen(
+          appointmentId: state.pathParameters['appointmentId']!,
+          appointment: state.extra is AppointmentSummary
+              ? state.extra! as AppointmentSummary
+              : null,
+        ),
       ),
       GoRoute(
         path: '/booking',
@@ -52,7 +58,7 @@ class BeautyApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Odivon Beauty',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.system,
       theme: _theme(Brightness.light),
       darkTheme: _theme(Brightness.dark),
       routerConfig: router,
@@ -61,13 +67,17 @@ class BeautyApp extends ConsumerWidget {
 
   ThemeData _theme(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final background = isDark ? const Color(0xFF171312) : const Color(0xFFF7F2EC);
-    final elevated = isDark ? const Color(0xFF221D1A) : const Color(0xFFFFFFFF);
-    final border = isDark ? const Color(0xFF3A302D) : const Color(0xFFE8DDCF);
-    final primary = const Color(0xFFB78B5D);
-    final primarySoft = const Color(0xFFE9D5B4);
-    final text = isDark ? const Color(0xFFF6F1EB) : const Color(0xFF1D1815);
-    final muted = isDark ? const Color(0xFFB9A68D) : const Color(0xFF6C5649);
+    final background = isDark
+        ? const Color(0xFF0B1120)
+        : const Color(0xFFF8FAFC);
+    final elevated = isDark ? const Color(0xFF111827) : const Color(0xFFFFFFFF);
+    final border = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final primary = const Color(0xFF6366F1);
+    final primarySoft = isDark
+        ? const Color(0xFF312E81)
+        : const Color(0xFFE0E7FF);
+    final text = isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
+    final muted = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
     return ThemeData(
       useMaterial3: true,
@@ -78,7 +88,7 @@ class BeautyApp extends ConsumerWidget {
         brightness: brightness,
         primary: primary,
         onPrimary: Colors.white,
-        secondary: const Color(0xFF8F6C4F),
+        secondary: const Color(0xFF8B5CF6),
         surface: elevated,
         onSurface: text,
       ),
@@ -108,15 +118,13 @@ class BeautyApp extends ConsumerWidget {
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: isDark ? const Color(0xFF1C1817) : const Color(0xFFFDFBF8),
+        backgroundColor: isDark
+            ? const Color(0xFF1C1817)
+            : const Color(0xFFFDFBF8),
         elevation: 0,
         indicatorColor: primarySoft,
         labelTextStyle: WidgetStatePropertyAll(
-          TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: text,
-          ),
+          TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: text),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -128,10 +136,7 @@ class BeautyApp extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
-          textStyle: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-          ),
+          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

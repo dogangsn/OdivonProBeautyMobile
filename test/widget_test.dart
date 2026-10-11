@@ -5,13 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  testWidgets('shows role entry and opens customer shell', (tester) async {
+  testWidgets('shows secure phone authentication screen', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: BeautyApp()));
     await tester.pumpAndSettle();
-    expect(find.text('Musteri olarak devam et'), findsOneWidget);
-    await tester.tap(find.text('Musteri olarak devam et'));
-    await tester.pumpAndSettle();
-    expect(find.text('Musteri paneli'), findsOneWidget);
+    expect(find.text('Telefonla giris'), findsOneWidget);
+    expect(find.text('Kod gonder'), findsOneWidget);
+    expect(find.textContaining('Saglik ve finans verileri'), findsOneWidget);
   });
 
   test('session applies role authorization state', () {

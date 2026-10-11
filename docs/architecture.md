@@ -6,4 +6,4 @@ Firebase Authentication supplies ID tokens and Firebase Cloud Messaging handles 
 
 The customer shell covers OTP entry, appointments, reschedule/cancel contracts, packages and remaining sessions, loyalty, notification preferences and KVKK. The staff shell covers daily appointments, check-in, session notes/photos, authorized customer history, KPI summaries and notifications. Health and finance payloads use memory only and are not written to device cache.
 
-External adapters and Firebase project files are intentionally absent. The default build exposes clearly labeled demo data; enabling Firebase requires environment-specific configuration supplied outside source control.
+External adapters and Firebase project files are intentionally absent. The default build exposes no business data and keeps authentication disabled; enabling Firebase requires environment-specific configuration supplied outside source control.
