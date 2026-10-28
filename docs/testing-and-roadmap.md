@@ -1,6 +1,6 @@
 # Testing, CI and roadmap
 
-Unit tests cover session/role state; widget tests cover the secure phone entry surface. Integration coverage targets Firebase ID-token refresh, MainApi error envelopes, FCM consent and deep links. Acceptance journeys cover customer OTP/appointment/package/KVKK and staff check-in/session notes/photos/customer history/KPI.
+Jest (`jest-expo`) unit tests cover models, the MainApi client envelope and error handling, session/role state and role navigation; React Native Testing Library tests cover the sign-in surface. Integration coverage targets Firebase ID-token refresh, MainApi error envelopes, FCM consent and deep links. Acceptance journeys cover customer OTP/appointment/package/KVKK and staff check-in/session notes/photos/customer history/KPI.
 
 GitHub Actions run analyzer, tests and Android debug build and upload the APK. iOS sources are retained, but signing and App Store builds require macOS credentials. CI contains no deployment step and no secrets.
 
