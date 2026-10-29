@@ -56,7 +56,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       { image: './assets/splash-icon.png', imageWidth: 200, resizeMode: 'contain', backgroundColor: '#17112E' },
     ],
     '@react-native-community/datetimepicker',
-    ['expo-build-properties', { ios: { useFrameworks: 'static' } }],
+    [
+      'expo-build-properties',
+      {
+        ios: { useFrameworks: 'static' },
+        // Firebase Android SDKs are compiled with Kotlin 2.4; React Native's default is older.
+        android: { kotlinVersion: '2.4.0' },
+      },
+    ],
     ...firebasePlugins,
   ],
   experiments: {

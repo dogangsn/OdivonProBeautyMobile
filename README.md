@@ -12,6 +12,12 @@ npm run android   # builds a development client (expo run:android)
 
 This app uses native modules (React Native Firebase), so it runs in a development build, not in Expo Go.
 
+### Windows notes
+
+- `JAVA_HOME` must point to a JDK 17+ (not a JRE). Android Studio's bundled JDK works: `$env:JAVA_HOME="C:\Program Files\Android\Android Studio\jbr"`.
+- The native build hits the Windows 260-character path limit. Enable long paths once (admin PowerShell: `New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force`) or clone the repo to a short path such as `C:\odv`.
+- If the old Flutter build is installed on the phone, uninstall it first (`adb uninstall com.odivonpro.beauty`); its signing key differs.
+
 ## Firebase configuration
 
 No Firebase file is committed. For Android, `scripts/write-firebase-config.mjs` writes `google-services.json` from `FIREBASE_API_KEY`, `FIREBASE_ANDROID_APP_ID`, `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_PROJECT_ID` and `FIREBASE_STORAGE_BUCKET` (the same GitHub Actions secrets the Flutter build used). For iOS, place `GoogleService-Info.plist` in the project root or point `GOOGLE_SERVICE_INFO_PLIST` at it. Then build with `ENABLE_FIREBASE=true`. `MAIN_API_URL` overrides the API base URL.
