@@ -64,10 +64,15 @@ export function createBeautyApi(options: BeautyApiOptions): BeautyApi {
       body = null;
     }
     if (response.status >= 400) {
+      // MainApi errors look like { success: false, error: { code, message }, meta }.
+      const nested = isRecord(body) && isRecord(body.error) ? body.error.message : undefined;
+      const flat = isRecord(body) ? body.message : undefined;
       const message =
-        isRecord(body) && typeof body.message === 'string'
-          ? body.message
-          : `MainApi isteği tamamlanamadı (${response.status}).`;
+        typeof nested === 'string' && nested
+          ? nested
+          : typeof flat === 'string' && flat
+            ? flat
+            : `MainApi isteği tamamlanamadı (${response.status}).`;
       throw new ApiError(message, response.status);
     }
     if (!isRecord(body)) throw new ApiError('Geçersiz MainApi yanıtı.', response.status);

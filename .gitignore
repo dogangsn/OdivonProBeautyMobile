@@ -11,6 +11,16 @@ expo-env.d.ts
 /android
 /ios
 
+# Leftovers from the old Flutter app (build/ alone is >2 GB with files over GitHub's 100 MB limit)
+/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+/android.flutter-backup/
+/ios.flutter-backup/
+.idea/
+*.iml
+
 # Firebase native config is supplied by CI / local env, never committed
 google-services.json
 GoogleService-Info.plist

@@ -55,6 +55,16 @@ describe('MainApi client', () => {
     await expect(api.dashboard()).rejects.toThrow('Yetkiniz yok.');
   });
 
+  it('reads the MainApi error envelope message', async () => {
+    const { api } = setup([
+      {
+        status: 404,
+        body: { success: false, error: { code: 'VALIDATION_ERROR', message: 'Guzellik merkezi kodu bulunamadi.' } },
+      },
+    ]);
+    await expect(api.connectCustomer('BY-X')).rejects.toThrow('Guzellik merkezi kodu bulunamadi.');
+  });
+
   it('falls back to a status message for non-JSON errors', async () => {
     const { api } = setup([{ status: 502, body: '<html>' }]);
     await expect(api.list('customers')).rejects.toThrow('MainApi isteği tamamlanamadı (502).');
