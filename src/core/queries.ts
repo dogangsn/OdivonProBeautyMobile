@@ -1,7 +1,14 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
-import type { JsonRecord } from './models';
 import { getBeautyApi } from './client';
+import {
+  appointmentFromRecord,
+  namesById,
+  withNames,
+  type AppointmentSummary,
+  type JsonRecord,
+} from './models';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -15,14 +22,54 @@ export function useDashboard() {
   return useQuery({ queryKey: queryKeys.dashboard, queryFn: () => getBeautyApi().dashboard() });
 }
 
-export function useAppointments() {
-  return useQuery({
+/**
+ * Appointments from yesterday to 30 days ahead, with customer, service and staff names
+ * filled in from lookup lists. MainApi ignores from/to and stores only ids, so both the
+ * range and the names are applied here. A lookup the caller may not read stays empty.
+ */
+export function useAppointments({ includeCustomers }: { includeCustomers: boolean }) {
+  const records = useQuery({
     queryKey: queryKeys.appointments,
-    queryFn: () => {
+    queryFn: async () => {
       const now = Date.now();
-      return getBeautyApi().appointments({ from: new Date(now - DAY), to: new Date(now + 30 * DAY) });
+      const from = new Date(now - DAY);
+      const to = new Date(now + 30 * DAY);
+      const items = await getBeautyApi().list('appointments', { from: from.toISOString(), to: to.toISOString() });
+      return items.filter((record) => {
+        const start = record.date('startAt');
+        return !start || (start >= from && start <= to);
+      });
     },
   });
+  const [services, staff, customers] = useQueries({
+    queries: ['services', 'staff', 'customers'].map((resource) => ({
+      queryKey: queryKeys.records(resource),
+      queryFn: () => getBeautyApi().list(resource),
+      enabled: resource !== 'customers' || includeCustomers,
+      retry: false,
+    })),
+  });
+
+  const data = useMemo<AppointmentSummary[] | undefined>(() => {
+    if (!records.data) return undefined;
+    const lookup = {
+      services: namesById(services.data),
+      staff: namesById(staff.data),
+      customers: namesById(customers.data),
+    };
+    return records.data
+      .map((record) => withNames(appointmentFromRecord(record), record, lookup))
+      .sort((a, b) => (a.startAt?.getTime() ?? 0) - (b.startAt?.getTime() ?? 0));
+  }, [records.data, services.data, staff.data, customers.data]);
+
+  return {
+    data,
+    isPending: records.isPending,
+    isError: records.isError,
+    error: records.error,
+    isRefetching: records.isRefetching,
+    refetch: () => Promise.all([records.refetch(), services.refetch(), staff.refetch()]),
+  };
 }
 
 export function useRecords(resource: string, enabled = true) {

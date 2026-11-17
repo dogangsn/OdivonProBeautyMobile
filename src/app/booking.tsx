@@ -11,7 +11,7 @@ import { getBeautyApi } from '@/core/client';
 import type { ApiRecord } from '@/core/models';
 import { queryKeys, useCreateAppointment } from '@/core/queries';
 import { useSession } from '@/core/session';
-import { usePalette } from '@/theme';
+import { fonts, usePalette } from '@/theme';
 
 const APPOINTMENT_MINUTES = 60;
 const dateTimeFormat = new Intl.DateTimeFormat('tr-TR', { dateStyle: 'full', timeStyle: 'short' });
@@ -150,7 +150,7 @@ export default function BookingScreen() {
 
 const styles = StyleSheet.create({
   body: { padding: 20, gap: 14, paddingBottom: 40 },
-  title: { fontSize: 24, fontWeight: '800' },
+  title: { fontSize: 24, fontFamily: fonts.extrabold },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingTop: 8 },
 });

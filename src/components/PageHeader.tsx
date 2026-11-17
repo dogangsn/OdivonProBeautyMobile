@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useSession } from '@/core/session';
-import { usePalette } from '@/theme';
+import { type, usePalette } from '@/theme';
 
 import { BrandLogo } from './BrandLogo';
 import { IconButton } from './ui';
@@ -12,24 +12,26 @@ export function PageHeader({ title, subtitle, trailing }: { title: string; subti
   const signOut = useSession((state) => state.signOut);
   return (
     <View style={styles.row}>
-      <BrandLogo size={48} />
+      <View style={[styles.logo, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+        <BrandLogo size={34} />
+      </View>
       <View style={styles.text}>
-        <Text accessibilityRole="header" style={[styles.title, { color: palette.text }]} numberOfLines={1}>
+        <Text accessibilityRole="header" style={[type.title, { color: palette.text }]} numberOfLines={1}>
           {title}
         </Text>
         {subtitle ? (
-          <Text style={{ color: palette.muted, fontSize: 12 }} numberOfLines={1}>
+          <Text style={[type.caption, { color: palette.muted, marginTop: 1 }]} numberOfLines={1}>
             {subtitle}
           </Text>
         ) : null}
       </View>
-      {trailing ?? <IconButton icon="logout" label="Çıkış yap" onPress={() => void signOut()} />}
+      {trailing ?? <IconButton icon="logout" label="Çıkış yap" onPress={() => void signOut()} color={palette.muted} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 13, paddingHorizontal: 20, paddingVertical: 18 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 16 },
+  logo: { width: 46, height: 46, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   text: { flex: 1 },
-  title: { fontSize: 22, fontWeight: '800' },
 });

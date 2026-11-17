@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components/Icon';
 import { PageHeader } from '@/components/PageHeader';
 import { Card } from '@/components/ui';
-import { usePalette, withAlpha } from '@/theme';
+import { fonts, usePalette, withAlpha } from '@/theme';
 
 const actions: { icon: IconName; title: string; detail: string; onPress?: () => void }[] = [
   {
@@ -38,7 +38,7 @@ export default function SessionHubTab() {
                   <Icon name={action.icon} color={palette.primary} />
                 </View>
                 <View style={{ flex: 1, gap: 4 }}>
-                  <Text style={{ color: palette.text, fontWeight: '800', fontSize: 16 }}>{action.title}</Text>
+                  <Text style={{ color: palette.text, fontFamily: fonts.extrabold, fontSize: 16 }}>{action.title}</Text>
                   <Text style={{ color: palette.muted }}>{action.onPress ? action.detail : `${action.detail} · Yakında`}</Text>
                 </View>
                 <Icon name="chevron-right" color={palette.muted} />

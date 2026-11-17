@@ -1,3 +1,11 @@
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -6,7 +14,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { useSession } from '@/core/session';
-import { usePalette } from '@/theme';
+import { fonts, usePalette } from '@/theme';
 
 export default function RootLayout() {
   const [queryClient] = useState(
@@ -15,6 +23,15 @@ export default function RootLayout() {
   const start = useSession((state) => state.start);
   const status = useSession((state) => state.status);
   const palette = usePalette();
+  // Plus Jakarta Sans, same typeface as the web app. A load failure falls back to the system font.
+  const [fontsLoaded, fontError] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
+  const ready = fontsLoaded || fontError !== null;
 
   useEffect(() => start(), [start]);
 
@@ -27,7 +44,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <StatusBar style="auto" />
-        {status === 'loading' ? (
+        {status === 'loading' || !ready ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.background }}>
             <ActivityIndicator color={palette.primary} />
           </View>
@@ -37,6 +54,8 @@ export default function RootLayout() {
               headerShadowVisible: false,
               headerStyle: { backgroundColor: palette.background },
               headerTintColor: palette.text,
+              headerTitleStyle: { fontFamily: fonts.bold },
+              headerBackButtonDisplayMode: 'minimal',
               contentStyle: { backgroundColor: palette.background },
             }}
           >

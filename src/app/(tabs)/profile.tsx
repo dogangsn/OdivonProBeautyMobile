@@ -5,7 +5,7 @@ import { Icon, type IconName } from '@/components/Icon';
 import { PageHeader } from '@/components/PageHeader';
 import { Button, Card } from '@/components/ui';
 import { sessionRoleLabel, useSession } from '@/core/session';
-import { usePalette } from '@/theme';
+import { fonts, usePalette } from '@/theme';
 
 const tiles: { icon: IconName; title: string }[] = [
   { icon: 'notifications-active', title: 'Bildirim tercihleri' },
@@ -28,10 +28,10 @@ export default function ProfileTab() {
               <Text style={styles.initial}>{(name.trim()[0] ?? 'O').toLocaleUpperCase('tr-TR')}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: palette.text, fontSize: 16, fontWeight: '800' }}>{name}</Text>
+              <Text style={{ color: palette.text, fontSize: 16, fontFamily: fonts.extrabold }}>{name}</Text>
               <Text style={{ color: palette.muted }}>{sessionRoleLabel(session)}</Text>
               {session.tenantName ? (
-                <Text style={{ color: palette.primary, fontWeight: '700', fontSize: 12, marginTop: 4 }}>
+                <Text style={{ color: palette.primary, fontFamily: fonts.bold, fontSize: 12, marginTop: 4 }}>
                   {session.tenantName}
                   {session.branchName ? ` · ${session.branchName}` : ''}
                 </Text>
@@ -56,6 +56,6 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 20, paddingBottom: 30, gap: 12 },
   profile: { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 20, marginBottom: 4 },
   avatar: { width: 60, height: 60, borderRadius: 30, alignItems: 'center', justifyContent: 'center' },
-  initial: { color: '#FFFFFF', fontWeight: '800', fontSize: 20 },
+  initial: { color: '#FFFFFF', fontFamily: fonts.extrabold, fontSize: 20 },
   tile: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 16, paddingVertical: 16 },
 });

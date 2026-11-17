@@ -1,4 +1,4 @@
-import { ApiRecord, appointmentFromRecord, parseDashboard, parseSessionProfile, productRoleLabel, shellRoleFor } from '@/core/models';
+import { ApiRecord, appointmentFromRecord, parseDashboard, parseSessionProfile, productRoleLabel, shellRoleFor, withNames } from '@/core/models';
 
 describe('role mapping', () => {
   it('maps product roles to the mobile shell', () => {
@@ -28,7 +28,7 @@ describe('parsers', () => {
     const item = appointmentFromRecord(
       new ApiRecord({ id: 'a1', customerId: 'c1', title: 'Lazer', startAt: '2026-10-28T10:00:00Z', status: 'confirmed' }),
     );
-    expect(item.customerName).toBe('c1');
+    expect(item.customerName).toBe('Müşteri');
     expect(item.serviceName).toBe('Lazer');
     expect(item.startAt?.toISOString()).toBe('2026-10-28T10:00:00.000Z');
     expect(appointmentFromRecord(new ApiRecord({ id: 'a2', startAt: 'bad' })).startAt).toBeUndefined();
@@ -42,6 +42,27 @@ describe('parsers', () => {
       criticalStock: 0,
       sessions: 0,
       packages: 0,
+    });
+  });
+});
+
+describe('appointment names', () => {
+  it('fills names from lookup lists because MainApi stores only ids', () => {
+    const record = new ApiRecord({ id: 'a1', customerId: 'c1', staffId: 's1', serviceIds: ['v1', 'v2'], status: 'confirmed' });
+    const item = withNames(appointmentFromRecord(record), record, {
+      customers: new Map([['c1', 'Ayşe Yılmaz']]),
+      staff: new Map([['s1', 'Elif']]),
+      services: new Map([['v1', 'Lazer'], ['v2', 'Cilt bakımı']]),
+    });
+    expect(item).toMatchObject({ customerName: 'Ayşe Yılmaz', staffName: 'Elif', serviceName: 'Lazer, Cilt bakımı' });
+  });
+
+  it('keeps readable fallbacks when a lookup is not visible', () => {
+    const record = new ApiRecord({ id: 'a1', customerId: 'c1', serviceIds: ['v9'] });
+    const empty = { customers: new Map(), staff: new Map(), services: new Map() };
+    expect(withNames(appointmentFromRecord(record), record, empty)).toMatchObject({
+      customerName: 'Müşteri',
+      serviceName: 'Bakım hizmeti',
     });
   });
 });

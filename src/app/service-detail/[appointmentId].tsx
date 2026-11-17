@@ -5,7 +5,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, Vi
 import { Button, Card, InlineError, SectionTitle, TextField } from '@/components/ui';
 import { errorMessage } from '@/core/api';
 import { useCompleteSession } from '@/core/queries';
-import { usePalette } from '@/theme';
+import { fonts, usePalette } from '@/theme';
 
 export default function ServiceDetailScreen() {
   const palette = usePalette();
@@ -50,7 +50,7 @@ export default function ServiceDetailScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <Card style={{ padding: 18, gap: 6 }}>
-          <Text style={{ color: palette.text, fontSize: 20, fontWeight: '800' }}>{serviceName || 'Randevu'}</Text>
+          <Text style={{ color: palette.text, fontSize: 20, fontFamily: fonts.extrabold }}>{serviceName || 'Randevu'}</Text>
           <Text style={{ color: palette.muted }}>{customerName || appointmentId}</Text>
         </Card>
         <SectionTitle>Uygulama parametreleri</SectionTitle>

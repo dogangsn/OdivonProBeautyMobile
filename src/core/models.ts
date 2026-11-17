@@ -117,7 +117,7 @@ export type AppointmentSummary = {
 export function appointmentFromRecord(record: ApiRecord): AppointmentSummary {
   return {
     id: record.id,
-    customerName: record.text('customerName', record.text('customerId', 'Müşteri')),
+    customerName: record.text('customerName', 'Müşteri'),
     serviceName: record.text('serviceName', record.text('title', 'Bakım hizmeti')),
     startAt: record.date('startAt'),
     endAt: record.date('endAt'),
@@ -153,8 +153,46 @@ export const statusLabels: Record<string, string> = {
   pending: 'Bekliyor',
   confirmed: 'Onaylandı',
   'checked-in': 'Check-in yapıldı',
+  'in-progress': 'Seansta',
   completed: 'Tamamlandı',
   cancelled: 'İptal',
+  'no-show': 'Gelmedi',
+  rescheduled: 'Ertelendi',
+  active: 'Aktif',
+  inactive: 'Pasif',
+  frozen: 'Donduruldu',
 };
 
-export const formatCurrency = (value: number) => `${value.toFixed(0)} TL`;
+const currencyFormat = new Intl.NumberFormat('tr-TR', {
+  style: 'currency',
+  currency: 'TRY',
+  maximumFractionDigits: 0,
+});
+
+export const formatCurrency = (value: number) => currencyFormat.format(value);
+
+/** id → display name, built from MainApi list endpoints. */
+export type NameLookup = { customers: Map<string, string>; services: Map<string, string>; staff: Map<string, string> };
+
+export function namesById(records: ApiRecord[] = []): Map<string, string> {
+  return new Map(records.filter((record) => record.id).map((record) => [record.id, record.title]));
+}
+
+/**
+ * MainApi appointment documents only store ids (customerId, staffId, serviceIds).
+ * Fill in readable names from the lookup lists the caller may see.
+ */
+export function withNames(appointment: AppointmentSummary, record: ApiRecord, lookup: NameLookup): AppointmentSummary {
+  const customerId = record.text('customerId');
+  const staffId = record.text('staffId');
+  const serviceIds = Array.isArray(record.values.serviceIds)
+    ? record.values.serviceIds.filter((value): value is string => typeof value === 'string')
+    : [];
+  const serviceNames = serviceIds.map((id) => lookup.services.get(id)).filter((name): name is string => Boolean(name));
+  return {
+    ...appointment,
+    customerName: record.text('customerName') || lookup.customers.get(customerId) || appointment.customerName,
+    staffName: record.text('staffName') || lookup.staff.get(staffId) || appointment.staffName,
+    serviceName: record.text('serviceName') || (serviceNames.length ? serviceNames.join(', ') : appointment.serviceName),
+  };
+}

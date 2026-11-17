@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router';
 import { Icon } from '@/components/Icon';
 import { ALL_TAB_ROUTES, tabsByRole } from '@/core/navigation';
 import { useSession } from '@/core/session';
-import { usePalette } from '@/theme';
+import { fonts, usePalette } from '@/theme';
 
 export default function TabsLayout() {
   const role = useSession((state) => state.role) ?? 'customer';
@@ -18,8 +18,8 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: palette.primary,
         tabBarInactiveTintColor: palette.muted,
-        tabBarStyle: { backgroundColor: palette.tabBar, borderTopColor: palette.border },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
+        tabBarStyle: { backgroundColor: palette.tabBar, borderTopColor: palette.border, paddingTop: 4 },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: fonts.bold },
         sceneStyle: { backgroundColor: palette.background },
       }}
     >

@@ -18,7 +18,7 @@ import { Icon, type IconName } from '@/components/Icon';
 import { Button, IconButton, InlineError, TextField } from '@/components/ui';
 import { authErrorMessage, getAuthGateway, type PhoneConfirmation } from '@/core/auth';
 import { useSession } from '@/core/session';
-import { radius, usePalette } from '@/theme';
+import { fonts, radius, usePalette } from '@/theme';
 
 type Mode = 'customer' | 'team';
 
@@ -137,9 +137,9 @@ export default function SignInScreen() {
   const submitLabel = !customer ? 'Güvenli giriş yap' : confirmation ? 'Kodu doğrula' : 'SMS kodu gönder';
 
   return (
-    <LinearGradient colors={['#17112E', '#28153D', '#541D56']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
-      <View style={[styles.glow, { top: -90, right: -80, width: 260, height: 260, backgroundColor: '#F472B655' }]} />
-      <View style={[styles.glow, { bottom: 80, left: -110, width: 300, height: 300, backgroundColor: '#7C3AED44' }]} />
+    <LinearGradient colors={['#0B1120', '#1E1B4B', '#4C1D95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
+      <View style={[styles.glow, { top: -90, right: -80, width: 260, height: 260, backgroundColor: '#D946EF40' }]} />
+      <View style={[styles.glow, { bottom: 80, left: -110, width: 300, height: 300, backgroundColor: '#6366F155' }]} />
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
@@ -274,7 +274,7 @@ export default function SignInScreen() {
               </View>
 
               <View style={styles.privacy}>
-                <Icon name="shield" size={18} color="#DBB7F5" />
+                <Icon name="shield" size={18} color="#C7D2FE" />
                 <Text style={styles.privacyText}>
                   Tenant, rol ve müşteri eşleşmesi MainApi tarafından güvenle doğrulanır.
                 </Text>
@@ -310,7 +310,7 @@ function Segment({
       style={[styles.segmentItem, { backgroundColor: active ? palette.primarySoft : 'transparent' }]}
     >
       <Icon name={icon} size={18} color={active ? palette.primary : palette.muted} />
-      <Text style={{ color: active ? palette.text : palette.muted, fontWeight: '600' }}>{label}</Text>
+      <Text style={{ color: active ? palette.text : palette.muted, fontFamily: fonts.semibold }}>{label}</Text>
     </Pressable>
   );
 }
@@ -320,10 +320,10 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 20, paddingTop: 28, paddingBottom: 32 },
   content: { width: '100%', maxWidth: 460, alignSelf: 'center' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  brandName: { color: '#FFFFFF', fontWeight: '900', fontSize: 17 },
-  brandTag: { color: '#DBB7F5', fontWeight: '700', fontSize: 9, letterSpacing: 1.6 },
-  headline: { color: '#FFFFFF', fontSize: 36, fontWeight: '900', lineHeight: 38, letterSpacing: -1.5, marginTop: 34 },
-  lead: { color: 'rgba(255,255,255,0.7)', fontSize: 16, lineHeight: 24, marginTop: 10 },
+  brandName: { color: '#FFFFFF', fontFamily: fonts.extrabold, fontSize: 17 },
+  brandTag: { color: '#C7D2FE', fontFamily: fonts.bold, fontSize: 9, letterSpacing: 1.6 },
+  headline: { color: '#FFFFFF', fontSize: 36, fontFamily: fonts.extrabold, lineHeight: 38, letterSpacing: -1.5, marginTop: 34 },
+  lead: { color: 'rgba(255,255,255,0.7)', fontFamily: fonts.medium, fontSize: 16, lineHeight: 24, marginTop: 10 },
   card: {
     marginTop: 26,
     padding: 22,
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: radius.pill,
   },
-  cardTitle: { fontSize: 20, fontWeight: '800' },
+  cardTitle: { fontSize: 20, fontFamily: fonts.extrabold },
   privacy: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 18 },
-  privacyText: { flex: 1, color: 'rgba(255,255,255,0.65)', fontSize: 12 },
+  privacyText: { flex: 1, color: 'rgba(255,255,255,0.65)', fontFamily: fonts.medium, fontSize: 12 },
 });
