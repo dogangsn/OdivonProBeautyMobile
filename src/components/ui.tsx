@@ -416,7 +416,11 @@ export function MetricCard({
         </View>
       </View>
       <View>
-        <Text style={[type.kpi, { color: palette.text }]} numberOfLines={1} adjustsFontSizeToFit>
+        <Text
+          style={[type.kpi, { color: palette.text }, value.length > 7 ? { fontSize: 23, lineHeight: 28 } : null]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
           {value}
         </Text>
         {hint ? <Text style={[type.caption, { color: colors.fg, marginTop: 4 }]}>{hint}</Text> : null}

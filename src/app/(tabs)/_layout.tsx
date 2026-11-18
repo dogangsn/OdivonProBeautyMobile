@@ -18,7 +18,7 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: palette.primary,
         tabBarInactiveTintColor: palette.muted,
-        tabBarStyle: { backgroundColor: palette.tabBar, borderTopColor: palette.border, paddingTop: 4 },
+        tabBarStyle: { backgroundColor: palette.tabBar, borderTopColor: palette.border },
         tabBarLabelStyle: { fontSize: 11, fontFamily: fonts.bold },
         sceneStyle: { backgroundColor: palette.background },
       }}
