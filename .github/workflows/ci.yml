@@ -1,6 +1,7 @@
 name: ci
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches: [main]
@@ -46,10 +47,12 @@ jobs:
         run: node scripts/write-firebase-config.mjs
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install
-      - name: Build Android debug APK
+      # Release APK bundles the JS, so it runs on a phone without a Metro dev server.
+      # It is signed with the debug key from the generated project (fine for testing, not for Play Store).
+      - name: Build Android release APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: odivonpro-beauty-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: odivonpro-beauty-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
