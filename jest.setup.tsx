@@ -10,3 +10,5 @@ jest.mock('expo-linear-gradient', () => {
   const { View } = jest.requireActual('react-native');
   return { LinearGradient: View };
 });
+
+jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);

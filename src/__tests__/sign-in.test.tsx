@@ -8,13 +8,13 @@ describe('sign-in screen', () => {
     expect(screen.getByText('Müşteri')).toBeTruthy();
     expect(screen.getByText('Ekip / Yönetici')).toBeTruthy();
     expect(screen.getByText('SMS kodu gönder')).toBeTruthy();
-    expect(screen.getByText(/Tenant, rol ve müşteri/)).toBeTruthy();
+    expect(screen.getByText(/uçtan uca şifrelenir/)).toBeTruthy();
   });
 
   it('switches to the team form', async () => {
     await render(<SignInScreen />);
     await fireEvent.press(screen.getByText('Ekip / Yönetici'));
-    expect(screen.getByText('Güvenli giriş yap')).toBeTruthy();
+    expect(screen.getByText('Giriş yap')).toBeTruthy();
     expect(screen.getByText('Şifremi unuttum')).toBeTruthy();
   });
 
