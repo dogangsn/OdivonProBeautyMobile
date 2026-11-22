@@ -2,8 +2,10 @@ import DateTimePicker, { DateTimePickerAndroid, type DateTimePickerEvent } from 
 import { useQueries } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { KeyboardScroll } from '@/components/KeyboardScroll';
 
 import { Button, ErrorCard, InlineError, Loading, SelectField, TextField, type SelectOption } from '@/components/ui';
 import { errorMessage } from '@/core/api';
@@ -102,8 +104,8 @@ export default function BookingScreen() {
   const [branches, services, staff, customers] = lookups.map((query) => query.data);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+    <View style={{ flex: 1 }}>
+      <KeyboardScroll contentContainerStyle={styles.body}>
         <Text style={[styles.title, { color: palette.text }]}>Randevu bilgileri</Text>
         <Text style={{ color: palette.muted }}>Uygunluk ve çakışma kontrolleri MainApi tarafından yapılır.</Text>
         <SelectField label="Şube" value={branchId} options={toOptions(branches)} onChange={setBranchId} />
@@ -127,7 +129,7 @@ export default function BookingScreen() {
           onPress={save}
           style={{ marginTop: 10 }}
         />
-      </ScrollView>
+      </KeyboardScroll>
       {Platform.OS === 'ios' ? (
         <Modal visible={iosPickerOpen} transparent animationType="slide" onRequestClose={() => setIosPickerOpen(false)}>
           <View style={styles.backdrop} />
@@ -144,7 +146,7 @@ export default function BookingScreen() {
           </SafeAreaView>
         </Modal>
       ) : null}
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

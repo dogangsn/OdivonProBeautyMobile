@@ -30,6 +30,7 @@ import {
 } from '@/theme';
 
 import { Icon, type IconName } from './Icon';
+import { useRevealFocusedInput } from './KeyboardScroll';
 
 export function Card({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
   const palette = usePalette();
@@ -162,6 +163,7 @@ export function TextField({
   ...props
 }: FieldProps & { ref?: Ref<ComponentRef<typeof TextInput>> }) {
   const palette = usePalette();
+  const reveal = useRevealFocusedInput();
   const [focused, setFocused] = useState(false);
   return (
     <View style={styles.fieldWrap}>
@@ -186,6 +188,7 @@ export function TextField({
           {...props}
           onFocus={(event) => {
             setFocused(true);
+            reveal();
             props.onFocus?.(event);
           }}
           onBlur={(event) => {

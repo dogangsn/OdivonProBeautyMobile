@@ -10,3 +10,6 @@ jest.mock('expo-linear-gradient', () => {
   const { View } = jest.requireActual('react-native');
   return { LinearGradient: View };
 });
+
+// Screens read insets directly; tests render without a SafeAreaProvider.
+jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);

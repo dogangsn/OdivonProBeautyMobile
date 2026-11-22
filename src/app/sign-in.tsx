@@ -1,20 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRef, useState, type ComponentRef } from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  type TextInput,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { Alert, Pressable, StyleSheet, Text, View, type TextInput } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandLogo } from '@/components/BrandLogo';
 import { Icon, type IconName } from '@/components/Icon';
+import { KeyboardScroll } from '@/components/KeyboardScroll';
 import { Button, IconButton, InlineError, TextField } from '@/components/ui';
 import { authErrorMessage, getAuthGateway, type PhoneConfirmation } from '@/core/auth';
 import { useSession } from '@/core/session';
@@ -24,6 +16,8 @@ type Mode = 'customer' | 'team';
 
 export default function SignInScreen() {
   const palette = usePalette();
+  const insets = useSafeAreaInsets();
+  const sheetColor = palette.dark ? palette.background : palette.surface;
   const sessionError = useSession((state) => state.error);
   const setSessionError = useSession((state) => state.setError);
   const setPendingCenterCode = useSession((state) => state.setPendingCenterCode);
@@ -39,6 +33,7 @@ export default function SignInScreen() {
   const [localError, setLocalError] = useState<string>();
   const [busy, setBusy] = useState(false);
   const passwordRef = useRef<ComponentRef<typeof TextInput>>(null);
+  const phoneRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   const error = localError ?? sessionError;
 
@@ -137,153 +132,179 @@ export default function SignInScreen() {
   const submitLabel = !customer ? 'Güvenli giriş yap' : confirmation ? 'Kodu doğrula' : 'SMS kodu gönder';
 
   return (
-    <LinearGradient colors={['#0B1120', '#1E1B4B', '#4C1D95']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
-      <View style={[styles.glow, { top: -90, right: -80, width: 260, height: 260, backgroundColor: '#D946EF40' }]} />
-      <View style={[styles.glow, { bottom: 80, left: -110, width: 300, height: 300, backgroundColor: '#6366F155' }]} />
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-            <View style={styles.content}>
-              <View style={styles.brand}>
-                <BrandLogo size={52} />
-                <View>
-                  <Text style={styles.brandName}>OdivonPro</Text>
-                  <Text style={styles.brandTag}>BEAUTY CENTER</Text>
-                </View>
+    <View style={{ flex: 1, backgroundColor: sheetColor }}>
+      <StatusBar style="light" />
+      <KeyboardScroll contentContainerStyle={{ flexGrow: 1 }} bounces={false} showsVerticalScrollIndicator={false}>
+        <LinearGradient
+          colors={['#1E1B4B', '#4338CA', '#7C3AED']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.hero, { paddingTop: insets.top + 20 }]}
+        >
+          <View style={[styles.glow, { top: -70, right: -60, width: 220, height: 220, backgroundColor: '#F0ABFC33' }]} />
+          <View style={[styles.glow, { bottom: -40, left: -70, width: 200, height: 200, backgroundColor: '#818CF840' }]} />
+          <View style={styles.inner}>
+            <View style={styles.brand}>
+              <View style={styles.logoTile}>
+                <BrandLogo size={34} />
               </View>
-              <Text style={styles.headline}>Güzelliği yönetmenin{'\n'}zarif hali.</Text>
-              <Text style={styles.lead}>
-                Merkeziniz, randevularınız ve bakım yolculuğunuz tek bir güvenli akışta.
+              <View>
+                <Text style={styles.brandName}>OdivonPro</Text>
+                <Text style={styles.brandTag}>BEAUTY CENTER</Text>
+              </View>
+            </View>
+            <Text style={styles.headline}>
+              {customer ? 'Tekrar\nhoş geldiniz' : 'Merkezinizi\nyönetin'}
+            </Text>
+            <Text style={styles.lead}>
+              {customer
+                ? 'Randevularınız ve bakım geçmişiniz tek dokunuşla elinizde.'
+                : 'Randevular, ekip ve müşteriler tek bir güvenli panelde.'}
+            </Text>
+          </View>
+        </LinearGradient>
+
+        <View style={[styles.sheet, { backgroundColor: sheetColor }]}>
+          <View style={styles.inner}>
+            <View style={[styles.segment, { backgroundColor: palette.surfaceSoft, borderColor: palette.border }]} accessibilityRole="tablist">
+              <Segment label="Müşteri" icon="spa" active={customer} disabled={busy} onPress={() => changeMode('customer')} />
+              <Segment
+                label="Ekip / Yönetici"
+                icon="badge"
+                active={!customer}
+                disabled={busy}
+                onPress={() => changeMode('team')}
+              />
+            </View>
+
+            <View style={{ gap: 4, marginTop: 24 }}>
+              <Text style={[styles.title, { color: palette.text }]}>
+                {customer ? (confirmation ? 'Kodu doğrulayın' : 'Telefonla giriş') : 'Hesabınıza giriş yapın'}
               </Text>
+              <Text style={[styles.subtitle, { color: palette.muted }]}>
+                {customer
+                  ? confirmation
+                    ? 'Telefonunuza gelen 6 haneli kodu girin.'
+                    : 'Merkezinizde kayıtlı telefon numaranızı kullanın.'
+                  : 'Merkez yöneticinizin tanımladığı hesabı kullanın.'}
+              </Text>
+            </View>
 
-              <View style={[styles.card, { backgroundColor: palette.surface }]}>
-                <View style={[styles.segment, { borderColor: palette.border }]} accessibilityRole="tablist">
-                  <Segment label="Müşteri" icon="spa" active={customer} disabled={busy} onPress={() => changeMode('customer')} />
-                  <Segment
-                    label="Ekip / Yönetici"
-                    icon="badge"
-                    active={!customer}
-                    disabled={busy}
-                    onPress={() => changeMode('team')}
+            <View style={styles.form}>
+              {customer ? (
+                confirmation ? (
+                  <TextField
+                    label="SMS doğrulama kodu"
+                    icon="password"
+                    keyboardType="number-pad"
+                    textContentType="oneTimeCode"
+                    autoComplete="sms-otp"
+                    maxLength={6}
+                    value={code}
+                    onChangeText={setCode}
+                    onSubmitEditing={busy ? undefined : submit}
+                    helper={`${phone} numarasına gönderildi`}
+                    style={styles.codeInput}
                   />
-                </View>
-
-                <View style={{ gap: 6 }}>
-                  <Text style={[styles.cardTitle, { color: palette.text }]}>
-                    {customer ? 'Bakım yolculuğunuza dönün' : 'Yönetim merkezine giriş yapın'}
-                  </Text>
-                  <Text style={{ color: palette.muted, fontSize: 12, lineHeight: 17 }}>
-                    {customer
-                      ? 'Merkezinizde kayıtlı telefon numaranızı kullanın.'
-                      : 'Merkez yöneticiniz tarafından tanımlanan hesabı kullanın.'}
-                  </Text>
-                </View>
-
-                {customer ? (
-                  confirmation ? (
-                    <TextField
-                      label="SMS doğrulama kodu"
-                      icon="password"
-                      keyboardType="number-pad"
-                      textContentType="oneTimeCode"
-                      autoComplete="sms-otp"
-                      maxLength={6}
-                      value={code}
-                      onChangeText={setCode}
-                      onSubmitEditing={busy ? undefined : submit}
-                      helper={`${phone} numarasına gönderildi`}
-                    />
-                  ) : (
-                    <>
-                      <TextField
-                        label="Merkez kodu"
-                        icon="storefront"
-                        placeholder="BY-XXXXXX"
-                        autoCapitalize="characters"
-                        autoCorrect={false}
-                        returnKeyType="next"
-                        value={centerCode}
-                        onChangeText={setCenterCode}
-                      />
-                      <TextField
-                        label="Telefon numarası"
-                        icon="phone"
-                        placeholder="+905xxxxxxxxx"
-                        keyboardType="phone-pad"
-                        textContentType="telephoneNumber"
-                        autoComplete="tel"
-                        returnKeyType="done"
-                        value={phone}
-                        onChangeText={setPhone}
-                        onSubmitEditing={busy ? undefined : submit}
-                      />
-                    </>
-                  )
                 ) : (
                   <>
                     <TextField
-                      label="E-posta adresi"
-                      icon="alternate-email"
-                      keyboardType="email-address"
-                      textContentType="username"
-                      autoComplete="email"
-                      autoCapitalize="none"
+                      label="Merkez kodu"
+                      icon="storefront"
+                      placeholder="BY-XXXXXX"
+                      autoCapitalize="characters"
                       autoCorrect={false}
                       returnKeyType="next"
-                      value={email}
-                      onChangeText={setEmail}
-                      onSubmitEditing={() => passwordRef.current?.focus()}
+                      value={centerCode}
+                      onChangeText={setCenterCode}
+                      onSubmitEditing={() => phoneRef.current?.focus()}
                     />
                     <TextField
-                      ref={passwordRef}
-                      label="Şifre"
-                      icon="lock-outline"
-                      secureTextEntry={hidePassword}
-                      textContentType="password"
-                      autoComplete="password"
-                      autoCapitalize="none"
+                      ref={phoneRef}
+                      label="Telefon numarası"
+                      icon="phone-iphone"
+                      placeholder="+905xxxxxxxxx"
+                      keyboardType="phone-pad"
+                      textContentType="telephoneNumber"
+                      autoComplete="tel"
                       returnKeyType="done"
-                      value={password}
-                      onChangeText={setPassword}
+                      value={phone}
+                      onChangeText={setPhone}
                       onSubmitEditing={busy ? undefined : submit}
-                      trailing={
-                        <IconButton
-                          icon={hidePassword ? 'visibility' : 'visibility-off'}
-                          label={hidePassword ? 'Şifreyi göster' : 'Şifreyi gizle'}
-                          color={palette.muted}
-                          onPress={() => setHidePassword((value) => !value)}
-                        />
-                      }
-                    />
-                    <Button
-                      label="Şifremi unuttum"
-                      variant="text"
-                      disabled={busy}
-                      onPress={resetPassword}
-                      style={{ alignSelf: 'flex-end', paddingHorizontal: 4 }}
                     />
                   </>
-                )}
+                )
+              ) : (
+                <>
+                  <TextField
+                    label="E-posta adresi"
+                    icon="alternate-email"
+                    placeholder="ornek@merkez.com"
+                    keyboardType="email-address"
+                    textContentType="username"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    returnKeyType="next"
+                    value={email}
+                    onChangeText={setEmail}
+                    onSubmitEditing={() => passwordRef.current?.focus()}
+                  />
+                  <TextField
+                    ref={passwordRef}
+                    label="Şifre"
+                    icon="lock-outline"
+                    placeholder="••••••••"
+                    secureTextEntry={hidePassword}
+                    textContentType="password"
+                    autoComplete="password"
+                    autoCapitalize="none"
+                    returnKeyType="done"
+                    value={password}
+                    onChangeText={setPassword}
+                    onSubmitEditing={busy ? undefined : submit}
+                    trailing={
+                      <IconButton
+                        icon={hidePassword ? 'visibility' : 'visibility-off'}
+                        label={hidePassword ? 'Şifreyi göster' : 'Şifreyi gizle'}
+                        color={palette.muted}
+                        onPress={() => setHidePassword((value) => !value)}
+                      />
+                    }
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    disabled={busy}
+                    onPress={resetPassword}
+                    hitSlop={10}
+                    style={{ alignSelf: 'flex-end', marginTop: -4 }}
+                  >
+                    <Text style={[styles.link, { color: palette.primary }]}>Şifremi unuttum</Text>
+                  </Pressable>
+                </>
+              )}
 
-                {error ? <InlineError message={error} /> : null}
+              {error ? <InlineError message={error} /> : null}
 
-                <Button label={submitLabel} icon="arrow-forward" busy={busy} onPress={submit} />
-                {customer && confirmation ? (
-                  <Button label="Telefon numarasını değiştir" variant="text" disabled={busy} onPress={resetPhone} />
-                ) : null}
-              </View>
-
-              <View style={styles.privacy}>
-                <Icon name="shield" size={18} color="#C7D2FE" />
-                <Text style={styles.privacyText}>
-                  Tenant, rol ve müşteri eşleşmesi MainApi tarafından güvenle doğrulanır.
-                </Text>
-              </View>
+              <Button label={submitLabel} icon="arrow-forward" busy={busy} onPress={submit} style={{ marginTop: 4 }} />
+              {customer && confirmation ? (
+                <Button label="Telefon numarasını değiştir" variant="text" disabled={busy} onPress={resetPhone} />
+              ) : null}
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </LinearGradient>
+
+            <View style={[styles.privacy, { backgroundColor: palette.surfaceSoft, borderColor: palette.border }]}>
+              <View style={[styles.privacyIcon, { backgroundColor: palette.primarySoft }]}>
+                <Icon name="verified-user" size={16} color={palette.primary} />
+              </View>
+              <Text style={[styles.privacyText, { color: palette.muted }]}>
+                Tenant, rol ve müşteri eşleşmesi MainApi tarafından güvenle doğrulanır.
+              </Text>
+            </View>
+          </View>
+          <View style={{ height: insets.bottom + 12 }} />
+        </View>
+      </KeyboardScroll>
+    </View>
   );
 }
 
@@ -307,47 +328,77 @@ function Segment({
       accessibilityState={{ selected: active, disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={[styles.segmentItem, { backgroundColor: active ? palette.primarySoft : 'transparent' }]}
+      style={[
+        styles.segmentItem,
+        active ? [styles.segmentActive, { backgroundColor: palette.dark ? palette.surface : '#FFFFFF' }] : null,
+      ]}
     >
-      <Icon name={icon} size={18} color={active ? palette.primary : palette.muted} />
-      <Text style={{ color: active ? palette.text : palette.muted, fontFamily: fonts.semibold }}>{label}</Text>
+      <Icon name={icon} size={17} color={active ? palette.primary : palette.muted} />
+      <Text style={{ color: active ? palette.text : palette.muted, fontFamily: active ? fonts.bold : fonts.semibold, fontSize: 13 }}>
+        {label}
+      </Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  hero: { paddingHorizontal: 24, paddingBottom: 64, overflow: 'hidden' },
   glow: { position: 'absolute', borderRadius: 999 },
-  scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 20, paddingTop: 28, paddingBottom: 32 },
-  content: { width: '100%', maxWidth: 460, alignSelf: 'center' },
+  inner: { width: '100%', maxWidth: 460, alignSelf: 'center' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  brandName: { color: '#FFFFFF', fontFamily: fonts.extrabold, fontSize: 17 },
-  brandTag: { color: '#C7D2FE', fontFamily: fonts.bold, fontSize: 9, letterSpacing: 1.6 },
-  headline: { color: '#FFFFFF', fontSize: 36, fontFamily: fonts.extrabold, lineHeight: 38, letterSpacing: -1.5, marginTop: 34 },
-  lead: { color: 'rgba(255,255,255,0.7)', fontFamily: fonts.medium, fontSize: 16, lineHeight: 24, marginTop: 10 },
-  card: {
-    marginTop: 26,
-    padding: 22,
-    gap: 16,
-    borderRadius: radius.xxl,
+  logoTile: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.14)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
-    shadowColor: '#000000',
-    shadowOpacity: 0.2,
-    shadowRadius: 42,
-    shadowOffset: { width: 0, height: 20 },
-    elevation: 12,
+    borderColor: 'rgba(255,255,255,0.22)',
   },
-  segment: { flexDirection: 'row', borderWidth: 1, borderRadius: radius.pill, padding: 3 },
+  brandName: { color: '#FFFFFF', fontFamily: fonts.extrabold, fontSize: 17, letterSpacing: -0.2 },
+  brandTag: { color: '#C7D2FE', fontFamily: fonts.bold, fontSize: 9, letterSpacing: 1.8 },
+  headline: { color: '#FFFFFF', fontSize: 34, fontFamily: fonts.extrabold, lineHeight: 39, letterSpacing: -1.2, marginTop: 36 },
+  lead: { color: 'rgba(255,255,255,0.75)', fontFamily: fonts.medium, fontSize: 15, lineHeight: 22, marginTop: 10, maxWidth: 320 },
+  sheet: {
+    flexGrow: 1,
+    marginTop: -32,
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+  },
+  segment: { flexDirection: 'row', borderRadius: radius.lg, borderWidth: 1, padding: 4 },
   segmentItem: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 10,
-    borderRadius: radius.pill,
+    paddingVertical: 11,
+    borderRadius: radius.md,
   },
-  cardTitle: { fontSize: 20, fontFamily: fonts.extrabold },
-  privacy: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 18 },
-  privacyText: { flex: 1, color: 'rgba(255,255,255,0.65)', fontFamily: fonts.medium, fontSize: 12 },
+  segmentActive: {
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  title: { fontSize: 24, fontFamily: fonts.extrabold, letterSpacing: -0.6 },
+  subtitle: { fontSize: 14, fontFamily: fonts.medium, lineHeight: 20 },
+  form: { gap: 16, marginTop: 22 },
+  codeInput: { fontSize: 22, letterSpacing: 8, fontFamily: fonts.bold },
+  link: { fontFamily: fonts.bold, fontSize: 13 },
+  privacy: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 28,
+    padding: 14,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+  },
+  privacyIcon: { width: 32, height: 32, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+  privacyText: { flex: 1, fontFamily: fonts.medium, fontSize: 12, lineHeight: 17 },
 });

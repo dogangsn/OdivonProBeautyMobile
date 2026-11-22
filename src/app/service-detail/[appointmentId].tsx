@@ -1,7 +1,8 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
+import { KeyboardScroll } from '@/components/KeyboardScroll';
 import { Button, Card, InlineError, SectionTitle, TextField } from '@/components/ui';
 import { errorMessage } from '@/core/api';
 import { useCompleteSession } from '@/core/queries';
@@ -47,8 +48,8 @@ export default function ServiceDetailScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+    <View style={{ flex: 1 }}>
+      <KeyboardScroll contentContainerStyle={styles.body}>
         <Card style={{ padding: 18, gap: 6 }}>
           <Text style={{ color: palette.text, fontSize: 20, fontFamily: fonts.extrabold }}>{serviceName || 'Randevu'}</Text>
           <Text style={{ color: palette.muted }}>{customerName || appointmentId}</Text>
@@ -73,8 +74,8 @@ export default function ServiceDetailScreen() {
         />
         {error ? <InlineError message={error} /> : null}
         <Button label="Seansı tamamla" icon="task-alt" busy={complete.isPending} onPress={submit} style={{ marginTop: 10 }} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardScroll>
+    </View>
   );
 }
 
